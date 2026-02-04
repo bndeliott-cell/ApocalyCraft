@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>fr.apocalycraft.launcher</id>
+  <name>ApocalyCraft - Launcher</name>
+  <summary>Modded Minecraft Launcher</summary>
+  <developer_name>ApocalyCraft</developer_name>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-Proprietary</project_license>
+  <url type="homepage">https://apocalycraft.fr/</url>
+  <url type="bugtracker">https://apocalycraft.fr/support/</url>
+  <description>
+    <p>Custom launcher for ApocalyCraft servers. All mods, configurations, and updates are handled automatically.</p>
+    <p>Key features:</p>
+    <ul>
+      <li>One-click install and update of modpacks and configurations.</li>
+      <li>Automatic updates for launcher and game assets.</li>
+      <li>Built-in support for ApocalyCraft server instances.</li>
+    </ul>
+  </description>
+  <categories>
+    <category>Game</category>
+  </categories>
+  <keywords>
+    <keyword>minecraft</keyword>
+    <keyword>launcher</keyword>
+    <keyword>mods</keyword>
+    <keyword>apocalycraft</keyword>
+  </keywords>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://apocalycraft.fr/storage/img/screen-1.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://apocalycraft.fr/storage/img/screen-2.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://apocalycraft.fr/storage/img/screen-3.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://apocalycraft.fr/storage/img/screen-4.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://apocalycraft.fr/storage/img/screen-5.png</image>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1"/>
+  <launchable type="desktop-id">fr.apocalycraft.launcher.desktop</launchable>
+</component>

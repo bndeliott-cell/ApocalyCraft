@@ -1,0 +1,69 @@
+appId: 'fr.apocalycraft.launcher'
+productName: 'ApocalyCraft - Launcher'
+artifactName: 'ApocalyCraft-Launcher-setup-${version}.${ext}'
+
+copyright: 'Copyright © 2023-2026 ApocalyCraft'
+
+asar: true
+compression: 'maximum'
+
+files:
+  - '!{dist,.gitignore,.vscode,docs,dev-app-update.yml,.nvmrc,eslint.config.mjs,.github}'
+
+extraResources:
+  - 'libraries'
+extraFiles:
+  - from: 'build/fr.apocalycraft.launcher.appdata.xml'
+    to: 'usr/share/metainfo/fr.apocalycraft.launcher.appdata.xml'
+  - from: 'build/fr.apocalycraft.launcher.metainfo.xml'
+    to: 'usr/share/metainfo/fr.apocalycraft.launcher.metainfo.xml'
+
+# Windows Configuration
+win: 
+  target: 
+    - target: 'nsis'
+      arch: 'x64'
+
+# Windows Installer Configuration
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+
+# macOS Configuration
+mac:
+  target:
+    - target: 'dmg'
+      arch:
+        - 'x64'
+        - 'arm64'
+  artifactName: 'ApocalyCraft-Launcher-setup-${version}-${arch}.${ext}'
+  category: 'public.app-category.games'
+
+# Linux Configuration
+linux: 
+  target: 'AppImage'
+  artifactName: 'ApocalyCraft-Launcher-${version}-${arch}.${ext}'
+  maintainer: 'ApocalyCraft'
+  vendor: 'ApocalyCraft'
+  synopsis: 'Modded Minecraft Launcher'
+  description: 'Custom launcher for ApocalyCraft servers. All mods, configurations, and updates are handled automatically.'
+  category: 'Game'
+  desktop:
+    entry:
+      Name: 'ApocalyCraft - Launcher'
+      GenericName: 'Minecraft Launcher'
+      Icon: 'apocalycraft-launcher'
+      X-AppImage-URL: 'https://apocalycraft.fr/'
+      X-Website: 'https://apocalycraft.fr/'
+
+publish:
+  provider: 'github'
+  owner: 'ApocalyCraft'
+  repo: 'ApocalyCraft'
+afterAllArtifactBuild: 'scripts/after-all-artifact-build.js'
+
+directories:
+  buildResources: 'build'
+  output: 'dist'

@@ -1,0 +1,221 @@
+name: AppImage Checks
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'electron-builder.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/**'
+      - 'build/**'
+      - '.github/workflows/appimage-check.yml'
+  pull_request:
+    paths:
+      - 'electron-builder.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/**'
+      - 'build/**'
+      - '.github/workflows/appimage-check.yml'
+
+jobs:
+  appimage-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            desktop-file-utils \
+            appstream \
+            libfile-mimeinfo-perl \
+            squashfs-tools \
+            zsync
+
+      - name: Fetch appimagetool
+        run: |
+          mkdir -p tools
+          curl -L -o tools/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x tools/appimagetool
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build AppImage
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+          NPM_CONFIG_AUDIT: 'false'
+          NPM_CONFIG_FUND: 'false'
+          NPM_CONFIG_UPDATE_NOTIFIER: 'false'
+          NPM_CONFIG_LOGLEVEL: 'error'
+        run: npm run dist:linux -- --publish=never
+
+      - name: Verify AppImage signature (if present)
+        run: |
+          APPIMAGE=$(ls -1 dist/*.AppImage | head -n 1)
+          if [ -f "$APPIMAGE.sig" ]; then
+            curl -L -o /tmp/apocalycraft-launcher-public-key.asc https://apocalycraft.fr/handle-download/apocalycraft-launcher-public-key.asc
+            echo "ac7047ccdd212241ffdff3d7fe41672b3e90f9dbbd15ee70dd41e1f2eb14c49f  /tmp/apocalycraft-launcher-public-key.asc" | sha256sum -c -
+            gpg --import /tmp/apocalycraft-launcher-public-key.asc
+            gpg --verify "$APPIMAGE.sig" "$APPIMAGE"
+          else
+            echo "Skipping signature verification (missing public key or .sig)."
+          fi
+
+      - name: Lint AppDir
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+          APPSTREAMCLI_NO_NET: '1'
+        run: |
+          APPIMAGE=$(ls -1 dist/*.AppImage | head -n 1)
+          (cd dist && "./$(basename "$APPIMAGE")" --appimage-extract)
+          scripts/appimage-lint.sh dist/squashfs-root
+
+  appimage-lint-ubuntu-2204:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            desktop-file-utils \
+            appstream \
+            libfile-mimeinfo-perl \
+            squashfs-tools \
+            zsync
+
+      - name: Fetch appimagetool
+        run: |
+          mkdir -p tools
+          curl -L -o tools/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x tools/appimagetool
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build AppImage
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+          NPM_CONFIG_AUDIT: 'false'
+          NPM_CONFIG_FUND: 'false'
+          NPM_CONFIG_UPDATE_NOTIFIER: 'false'
+          NPM_CONFIG_LOGLEVEL: 'error'
+        run: npm run dist:linux -- --publish=never
+
+      - name: Verify AppImage signature (if present)
+        run: |
+          APPIMAGE=$(ls -1 dist/*.AppImage | head -n 1)
+          if [ -f "$APPIMAGE.sig" ]; then
+            curl -L -o /tmp/apocalycraft-launcher-public-key.asc https://apocalycraft.fr/handle-download/apocalycraft-launcher-public-key.asc
+            echo "ac7047ccdd212241ffdff3d7fe41672b3e90f9dbbd15ee70dd41e1f2eb14c49f  /tmp/apocalycraft-launcher-public-key.asc" | sha256sum -c -
+            gpg --import /tmp/apocalycraft-launcher-public-key.asc
+            gpg --verify "$APPIMAGE.sig" "$APPIMAGE"
+          else
+            echo "Skipping signature verification (missing public key or .sig)."
+          fi
+
+      - name: Lint AppDir
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+          APPSTREAMCLI_NO_NET: '1'
+        run: |
+          APPIMAGE=$(ls -1 dist/*.AppImage | head -n 1)
+          (cd dist && "./$(basename "$APPIMAGE")" --appimage-extract)
+          scripts/appimage-lint.sh dist/squashfs-root
+
+  appimage-offline-ubuntu-2204:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            desktop-file-utils \
+            appstream \
+            libfile-mimeinfo-perl \
+            squashfs-tools \
+            zsync \
+            xvfb
+
+      - name: Fetch appimagetool
+        run: |
+          mkdir -p tools
+          curl -L -o tools/appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x tools/appimagetool
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build AppImage
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+          NPM_CONFIG_AUDIT: 'false'
+          NPM_CONFIG_FUND: 'false'
+          NPM_CONFIG_UPDATE_NOTIFIER: 'false'
+          NPM_CONFIG_LOGLEVEL: 'error'
+        run: npm run dist:linux -- --publish=never
+
+      - name: Verify AppImage signature (if present)
+        run: |
+          APPIMAGE=$(ls -1 dist/*.AppImage | head -n 1)
+          if [ -f "$APPIMAGE.sig" ]; then
+            curl -L -o /tmp/apocalycraft-launcher-public-key.asc https://apocalycraft.fr/handle-download/apocalycraft-launcher-public-key.asc
+            echo "ac7047ccdd212241ffdff3d7fe41672b3e90f9dbbd15ee70dd41e1f2eb14c49f  /tmp/apocalycraft-launcher-public-key.asc" | sha256sum -c -
+            gpg --import /tmp/apocalycraft-launcher-public-key.asc
+            gpg --verify "$APPIMAGE.sig" "$APPIMAGE"
+          else
+            echo "Skipping signature verification (missing public key or .sig)."
+          fi
+
+      - name: Offline smoke test
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+        run: |
+          APPIMAGE=$(ls -1 dist/*.AppImage | head -n 1)
+
+          # Block outbound network (allow loopback)
+          sudo iptables -I OUTPUT -o lo -j ACCEPT
+          sudo iptables -I OUTPUT -p tcp -j REJECT
+          sudo iptables -I OUTPUT -p udp -j REJECT
+
+          set +e
+          timeout 20s xvfb-run -a "$APPIMAGE" --no-sandbox --disable-gpu
+          STATUS=$?
+          set -e
+
+          # Cleanup firewall rules
+          sudo iptables -F OUTPUT
+
+          # Consider a timeout (124) as success: the app started and kept running.
+          if [ "$STATUS" -ne 0 ] && [ "$STATUS" -ne 124 ]; then
+            echo "Offline smoke test failed with status $STATUS"
+            exit 1
+          fi
